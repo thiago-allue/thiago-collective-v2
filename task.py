@@ -1,9 +1,14 @@
 """
 Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run. This is an extracted sample from production (at one point).
 """
+# from simple_history.models import HistoricalRecords
+import datetime
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
 from django import db
+# Excerpted from `hyke.api.models`...
+from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from hyke.api.models import EmailView
@@ -26,12 +31,6 @@ from hyke.scheduled.service.nps_surveys import (
     schedule_onboarding_survey_sequence,
     send_client_onboarding_survey,
 )
-
-# Excerpted from `hyke.api.models`...
-from django.db import models
-from django.utils import timezone
-# from simple_history.models import HistoricalRecords
-import datetime
 
 
 class ProgressStatus(models.Model):
