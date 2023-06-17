@@ -204,10 +204,10 @@ def handle_annual_report_uploaded(item):
         if report_state:
             data_filter |= Q(data=f"{report_year} --- {report_name} --- {report_state}")
 
-        SEs = StatusEngine.objects.filter(email=item.email, process="Annual Report Reminder", outcome=-1).filter(
+        status_engines = StatusEngine.objects.filter(email=item.email, process="Annual Report Reminder", outcome=-1).filter(
             data_filter
         )
-        for se in SEs:
+        for se in status_engines:
             se.outcome = 1
             se.executed = timezone.now()
             se.save()
