@@ -109,6 +109,8 @@ class StatusEngine(models.Model):
 
 
 from structlog import get_logger
+from constants import *
+
 
 logger = get_logger(__name__)
 
@@ -123,18 +125,17 @@ def scheduled_system():
     db.close_old_connections()
 
     for item in items:
-        if item.process == "Client Onboarding Survey" and item.process_state == 1 and item.outcome == -1:
+        if item.process == CLIENT_ONBOARDING_SURVEY and item.process_state == 1 and item.outcome == -1:
             try:
                 send_client_onboarding_survey(email=item.email)
             except Exception as e:
                 logger.exception(f"Can't process Onboarding NPS Survey for status engine id={item.id}")
-
-        elif item.process == "Payment error email" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == PAYMENT_ERROR_EMAIL and item.process_state == 1 and item.outcome == -1:
             send_transactional_email(
                 email=item.email, template="[Action required] - Please update your payment information",
             )
             print("[Action required] - Please update your payment information. An email was sent to " + item.email)
-        elif item.process == "Running flow" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == RUNNING_FLOW and item.process_state == 1 and item.outcome == -1:
             ps = ProgressStatus.objects.get(email=item.email)
             ps.bookkeeping_setup_status = "completed"
             ps.tax_setup_status = "completed2"
@@ -175,7 +176,7 @@ def scheduled_system():
                         item.email
                     )
                 )
-        elif item.process == "Running flow" and item.process_state == 2 and item.outcome == -1:
+        elif item.process == RUNNING_FLOW and item.process_state == 2 and item.outcome == -1:
             EVs = EmailView.objects.filter(type="annual", legacy=True)
             for ev in EVs:
                 templatedate = ev.date.split("-")
@@ -193,7 +194,7 @@ def scheduled_system():
                     executed=emaildate,
                 )
                 se.save()
-        elif item.process == "Annual Report Uploaded" and item.outcome == -1:
+        elif item.process == ANNUAL_REPORT_UPLOADED and item.outcome == -1:
 
             report_details = item.data.split("---")
             report_name = report_details[1].strip()
@@ -218,16 +219,15 @@ def scheduled_system():
             item.save()
 
             next_annualreport_reminder(item.email, report_name, report_state)
-        elif item.process == "Calculate NPS Running" and item.outcome == -1:
+        elif item.process == CALCULATE_NPS_RUNNING and item.outcome == -1:
             nps_calculator_running()
 
             print("Running NPS is calculated for " + item.data)
-        elif item.process == "Calculate NPS Onboarding" and item.outcome == -1:
+        elif item.process == CALCULATE_NPS_ONBOARDING and item.outcome == -1:
             nps_calculator_onboarding()
 
             print("Onboarding NPS is calculated for " + item.data)
-
-        elif item.process == "Kickoff Questionnaire Completed" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == KICKOFF_QUESTIONNAIRE_COMPLETED and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.filter(email__iexact=item.email).first()
             if progress_status:
                 progress_status.questionnaire_status = "scheduled"
@@ -241,8 +241,7 @@ def scheduled_system():
                     process="Kickoff Questionnaire Completed",
                     data=item.data,
                 )
-
-        elif item.process == "Kickoff Call Scheduled" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == KICKOFF_CALL_SCHEDULED and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
             progress_status.questionnaire_status = "scheduled"
             progress_status.save()
@@ -255,8 +254,7 @@ def scheduled_system():
                 process="Kickoff Call Scheduled",
                 data=item.data,
             )
-
-        elif item.process == "Kickoff Call Cancelled" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == KICKOFF_CALL_CANCELLED and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
             progress_status.questionnaire_status = "reschedule"
             progress_status.save()
@@ -270,7 +268,7 @@ def scheduled_system():
             )
 
         elif (
-                item.process == "Transition Plan Submitted"
+                item.process == TRANSITION_PLAN_SUBMITTED
                 and item.process_state == 1
                 and item.outcome == StatusEngine.SCHEDULED
         ):
@@ -297,7 +295,7 @@ def scheduled_system():
                 defaults={"executed": timezone.now() + relativedelta(days=1)},
             )
 
-        elif item.process == "BK Training Call Scheduled" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == BK_TRAINING_CALL_SCHEDULED and item.process_state == 1 and item.outcome == -1:
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
@@ -307,7 +305,7 @@ def scheduled_system():
                 data=item.data,
             )
 
-        elif item.process == "BK Training Call Cancelled" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == BK_TRAINING_CALL_CANCELLED and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
             progress_status.bookkeeping_setup_status = "reschedule"
             progress_status.save()
@@ -330,7 +328,7 @@ def scheduled_system():
                 outcome=-1,
                 process="BK Training Call Cancelled",
             )
-        elif item.process == "Bank connect" and item.process_state == 1 and item.outcome == -1:
+        elif item.process == BANK_CONNECT and item.process_state == 1 and item.outcome == -1:
             send_transactional_email(
                 email=item.email,
                 template="SP.ONB.0021 - Account is created before, bank is connected later",
@@ -340,7 +338,7 @@ def scheduled_system():
             item.outcome = 1
             item.executed = timezone.now()
             item.save()
-        elif item.process == "Bank connect" and item.process_state == 2 and item.outcome == -1:
+        elif item.process == BANK_CONNECT and item.process_state == 2 and item.outcome == -1:
             send_transactional_email(
                 email=item.email,
                 template="SP.ONB.0010 - Account is created",
@@ -350,7 +348,7 @@ def scheduled_system():
             item.outcome = 1
             item.executed = timezone.now()
             item.save()
-        elif item.process == "Bank connect" and item.process_state == 3 and item.outcome == -1:
+        elif item.process == BANK_CONNECT and item.process_state == 3 and item.outcome == -1:
             if item.executed is None:
                 ref_time = item.created
             else:
