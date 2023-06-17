@@ -1,45 +1,33 @@
 """
 Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run.
 This is an extracted sample from production (at one point).
-"""
 
-
-"""
 See Thiago's notes here: https://tinyurl.com/2p82zwx2
-"""
 
-# from simple_history.models import HistoricalRecords
+"""
 import datetime
 from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
 from django import db
-# Excerpted from `hyke.api.models`...
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from structlog import get_logger
+
+from constants import *
+from dateutil.relativedelta import relativedelta
 from hyke.api.models import EmailView
-###
-# Excerpted below:
-# from hyke.api.models import (
-#    ProgressStatus,
-#    StatusEngine,
-# )
-##
-from hyke.automation.jobs import (
-    nps_calculator_onboarding,
-    nps_calculator_running,
-)
+from hyke.automation.jobs import nps_calculator_onboarding, nps_calculator_running
 from hyke.email.jobs import send_transactional_email
 from hyke.fms.jobs import create_dropbox_folders
 from hyke.scheduled.base import next_annualreport_reminder
-from hyke.scheduled.service.nps_surveys import (
-    schedule_next_running_survey_sequence,
-    schedule_onboarding_survey_sequence,
-    send_client_onboarding_survey,
-)
+from hyke.scheduled.service.nps_surveys import schedule_next_running_survey_sequence, \
+    schedule_onboarding_survey_sequence, send_client_onboarding_survey
 
 
+###
+# Excerpted below, from hyke.api.models import ProgressStatus, StatusEngine
+##
 class ProgressStatus(models.Model):
     PENDING = "pending"
     COMPLETED = "completed"
@@ -108,9 +96,6 @@ class StatusEngine(models.Model):
 
 
 # END Excerpt of `hyke.api.models`
-
-from constants import *
-from structlog import get_logger
 
 
 logger = get_logger(__name__)
