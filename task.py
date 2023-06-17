@@ -143,7 +143,7 @@ def handle_running_flow(item):
         StatusEngine.objects.get_or_create(
             email=item.email,
             process="Schedule Email",
-            formationtype=HYKE_DAILY,
+            formationtype="Hyke Daily",
             processstate=1,
             outcome=StatusEngine.SCHEDULED,
             data="What's upcoming with Collective?",
@@ -153,7 +153,7 @@ def handle_running_flow(item):
         StatusEngine.objects.get_or_create(
             email=item.email,
             process="Running flow",
-            formationtype=HYKE_DAILY,
+            formationtype="Hyke Daily",
             processstate=2,
             defaults={"outcome": StatusEngine.SCHEDULED, "data": "---"},
         )
@@ -186,7 +186,7 @@ def handle_running_flow(item):
             se = StatusEngine(
                 email=item.email,
                 process="Reminder",
-                formationtype=HYKE_DAILY,
+                formationtype="Hyke Daily",
                 processstate=1,
                 outcome=-1,
                 data=ev.title,
@@ -246,7 +246,7 @@ def handle_kickoff_questionnaire_completed(item):
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
-                formationtype=HYKE_SALESFORCE,
+                formationtype="Hyke Salesforce",
                 outcome=-1,
                 process="Kickoff Questionnaire Completed",
                 data=item.data,
@@ -262,7 +262,7 @@ def handle_kickoff_call_scheduled(item):
         StatusEngine.objects.create(
             email=item.email,
             processstate=1,
-            formationtype=HYKE_SALESFORCE,
+            formationtype="Hyke Salesforce",
             outcome=-1,
             process="Kickoff Call Scheduled",
             data=item.data,
@@ -278,7 +278,7 @@ def handle_kickoff_call_cancelled(item):
         StatusEngine.objects.create(
             email=item.email,
             processstate=1,
-            formationtype=HYKE_SALESFORCE,
+            formationtype="Hyke Salesforce",
             outcome=-1,
             process="Kickoff Call Cancelled",
         )
@@ -293,7 +293,7 @@ def handle_transition_plan_submitted(item):
         StatusEngine.objects.create(
             email=item.email,
             process="Transition Plan Submitted",
-            formationtype=HYKE_SALESFORCE,
+            formationtype="Hyke Salesforce",
             processstate=1,
             outcome=StatusEngine.SCHEDULED,
             data="---",
@@ -302,7 +302,7 @@ def handle_transition_plan_submitted(item):
         StatusEngine.objects.get_or_create(
             email=item.email,
             process="Schedule Email",
-            formationtype=HYKE_DAILY,
+            formationtype="Hyke Daily",
             processstate=1,
             outcome=StatusEngine.SCHEDULED,
             data="Welcome to the Collective community!",
@@ -315,7 +315,7 @@ def handle_bk_training_call_scheduled(item):
         StatusEngine.objects.create(
             email=item.email,
             processstate=1,
-            formationtype=HYKE_SALESFORCE,
+            formationtype="Hyke Salesforce",
             outcome=-1,
             process="BK Training Call Scheduled",
             data=item.data,
@@ -331,7 +331,7 @@ def handle_bk_training_call_cancelled(item):
         status_engine = StatusEngine(
             email=item.email,
             process="Followup - BK Training",
-            formationtype=HYKE_DAILY,
+            formationtype="Hyke Daily",
             processstate=1,
             outcome=-1,
             data="---",
@@ -342,7 +342,7 @@ def handle_bk_training_call_cancelled(item):
         StatusEngine.objects.create(
             email=item.email,
             processstate=1,
-            formationtype=HYKE_SALESFORCE,
+            formationtype="Hyke Salesforce",
             outcome=-1,
             process="BK Training Call Cancelled",
         )
@@ -421,7 +421,7 @@ process_mapping = {
 def scheduled_system():
     print("Scheduled task has been started for Hyke System...")
 
-    items = StatusEngine.objects.filter(Q(outcome=-1) & Q(formationtype__startswith=HYKE_DAILY))
+    items = StatusEngine.objects.filter(Q(outcome=-1) & Q(formationtype__startswith="Hyke Daily"))
 
     print("Active items in the job: " + str(len(items)))
 

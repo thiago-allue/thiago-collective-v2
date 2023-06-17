@@ -12,8 +12,3 @@ TRANSITION_PLAN_SUBMITTED = "Transition Plan Submitted"
 BK_TRAINING_CALL_SCHEDULED = "BK Training Call Scheduled"
 BK_TRAINING_CALL_CANCELLED = "BK Training Call Cancelled"
 BANK_CONNECT = "Bank connect"
-
-# constants referred to Hyke module
-HYKE_SYSTEM = "Hyke System"
-HYKE_DAILY = "Hyke Daily"
-HYKE_SALESFORCE = "Hyke Salesforce"
