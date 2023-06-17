@@ -1,5 +1,6 @@
 """
-Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run. This is an extracted sample from production (at one point).
+Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run.
+This is an extracted sample from production (at one point).
 """
 
 
@@ -126,7 +127,8 @@ def handle_client_onboarding_survey(item):
 
 def handle_payment_error_email(item):
     if item.process_state == 1 and item.outcome == -1:
-        send_transactional_email(email=item.email, template="[Action required] - Please update your payment information")
+        send_transactional_email(email=item.email,
+                                 template="[Action required] - Please update your payment information")
         print("[Action required] - Please update your payment information. An email was sent to " + item.email)
 
 
@@ -204,7 +206,8 @@ def handle_annual_report_uploaded(item):
         if report_state:
             data_filter |= Q(data=f"{report_year} --- {report_name} --- {report_state}")
 
-        status_engines = StatusEngine.objects.filter(email=item.email, process="Annual Report Reminder", outcome=-1).filter(
+        status_engines = StatusEngine.objects.filter(email=item.email,
+                                                     process="Annual Report Reminder", outcome=-1).filter(
             data_filter
         )
         for se in status_engines:
