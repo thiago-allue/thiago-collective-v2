@@ -114,7 +114,7 @@ logger = get_logger(__name__)
 
 
 def scheduled_system():
-    print("Scheduled task is started for Hyke System...")
+    print("Scheduled task has been started for Hyke System...")
 
     items = StatusEngine.objects.filter(Q(outcome=-1) & Q(formationtype__startswith="Hyke System"))
 
@@ -133,7 +133,7 @@ def scheduled_system():
             send_transactional_email(
                 email=item.email, template="[Action required] - Please update your payment information",
             )
-            print("[Action required] - Please update your payment information email is sent to " + item.email)
+            print("[Action required] - Please update your payment information. An email was sent to " + item.email)
         elif item.process == "Running flow" and item.process_state == 1 and item.outcome == -1:
             ps = ProgressStatus.objects.get(email=item.email)
             ps.bookkeeping_setup_status = "completed"
@@ -335,7 +335,7 @@ def scheduled_system():
                 email=item.email,
                 template="SP.ONB.0021 - Account is created before, bank is connected later",
             )
-            print("SP.ONB.0021 - Account is created before, bank is connected later email is sent to " + item.email)
+            print("SP.ONB.0021 - Account is created before, bank is connected later, email is sent to " + item.email)
 
             item.outcome = 1
             item.executed = timezone.now()
