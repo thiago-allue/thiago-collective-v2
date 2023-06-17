@@ -2,6 +2,7 @@
 Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run. This is an extracted sample from production (at one point).
 """
 
+
 """
 See Thiago's notes here: https://tinyurl.com/2p82zwx2
 """
@@ -107,18 +108,16 @@ class StatusEngine(models.Model):
 
 # END Excerpt of `hyke.api.models`
 
-
-from structlog import get_logger
 from constants import *
 
-
+from structlog import get_logger
 logger = get_logger(__name__)
 
 
 def scheduled_system():
     print("Scheduled task has been started for Hyke System...")
 
-    items = StatusEngine.objects.filter(Q(outcome=-1) & Q(formationtype__startswith="Hyke System"))
+    items = StatusEngine.objects.filter(Q(outcome=-1) & Q(formationtype__startswith=HYKE_DAILY))
 
     print("Active items in the job: " + str(len(items)))
 
@@ -144,7 +143,7 @@ def scheduled_system():
             StatusEngine.objects.get_or_create(
                 email=item.email,
                 process="Schedule Email",
-                formationtype="Hyke Daily",
+                formationtype=HYKE_DAILY,
                 processstate=1,
                 outcome=StatusEngine.SCHEDULED,
                 data="What's upcoming with Collective?",
@@ -154,7 +153,7 @@ def scheduled_system():
             StatusEngine.objects.get_or_create(
                 email=item.email,
                 process="Running flow",
-                formationtype="Hyke System",
+                formationtype=HYKE_DAILY,
                 processstate=2,
                 defaults={"outcome": StatusEngine.SCHEDULED, "data": "---"},
             )
@@ -187,7 +186,7 @@ def scheduled_system():
                 se = StatusEngine(
                     email=item.email,
                     process="Reminder",
-                    formationtype="Hyke System",
+                    formationtype=HYKE_DAILY,
                     processstate=1,
                     outcome=-1,
                     data=ev.title,
@@ -236,7 +235,7 @@ def scheduled_system():
                 StatusEngine.objects.create(
                     email=item.email,
                     processstate=1,
-                    formationtype="Hyke Salesforce",
+                    formationtype=HYKE_SALESFORCE,
                     outcome=-1,
                     process="Kickoff Questionnaire Completed",
                     data=item.data,
@@ -249,7 +248,7 @@ def scheduled_system():
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
-                formationtype="Hyke Salesforce",
+                formationtype=HYKE_SALESFORCE,
                 outcome=-1,
                 process="Kickoff Call Scheduled",
                 data=item.data,
@@ -262,7 +261,7 @@ def scheduled_system():
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
-                formationtype="Hyke Salesforce",
+                formationtype=HYKE_SALESFORCE,
                 outcome=-1,
                 process="Kickoff Call Cancelled",
             )
@@ -279,7 +278,7 @@ def scheduled_system():
             StatusEngine.objects.create(
                 email=item.email,
                 process="Transition Plan Submitted",
-                formationtype="Hyke Salesforce",
+                formationtype=HYKE_SALESFORCE,
                 processstate=1,
                 outcome=StatusEngine.SCHEDULED,
                 data="---",
@@ -288,7 +287,7 @@ def scheduled_system():
             StatusEngine.objects.get_or_create(
                 email=item.email,
                 process="Schedule Email",
-                formationtype="Hyke Daily",
+                formationtype=HYKE_DAILY,
                 processstate=1,
                 outcome=StatusEngine.SCHEDULED,
                 data="Welcome to the Collective community!",
@@ -299,7 +298,7 @@ def scheduled_system():
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
-                formationtype="Hyke Salesforce",
+                formationtype=HYKE_SALESFORCE,
                 outcome=-1,
                 process="BK Training Call Scheduled",
                 data=item.data,
@@ -313,7 +312,7 @@ def scheduled_system():
             status_engine = StatusEngine(
                 email=item.email,
                 process="Followup - BK Training",
-                formationtype="Hyke Daily",
+                formationtype=HYKE_DAILY,
                 processstate=1,
                 outcome=-1,
                 data="---",
@@ -324,7 +323,7 @@ def scheduled_system():
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
-                formationtype="Hyke Salesforce",
+                formationtype=HYKE_SALESFORCE,
                 outcome=-1,
                 process="BK Training Call Cancelled",
             )
