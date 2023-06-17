@@ -120,7 +120,7 @@ def handle_client_onboarding_survey(item):
     if item.process_state == 1 and item.outcome == -1:
         try:
             send_client_onboarding_survey(email=item.email)
-        except Exception as e:
+        except Exception:
             logger.exception(f"Can't process Onboarding NPS Survey for status engine id={item.id}")
 
 
@@ -173,12 +173,12 @@ def handle_running_flow(item):
                 )
             )
     elif item.process_state == 2 and item.outcome == -1:
-        EVs = EmailView.objects.filter(type="annual", legacy=True)
-        for ev in EVs:
-            templatedate = ev.date.split("-")
-            emaildate = datetime.now()
-            emaildate = emaildate.replace(month=int(templatedate[0]), day=int(templatedate[1]))
-            emaildate = emaildate.replace(hour=23, minute=59, second=59)
+        email_views = EmailView.objects.filter(type="annual", legacy=True)
+        for ev in email_views:
+            template_date = ev.date.split("-")
+            email_date = datetime.now()
+            email_date = email_date.replace(month=int(template_date[0]), day=int(template_date[1]))
+            email_date = email_date.replace(hour=23, minute=59, second=59)
 
             se = StatusEngine(
                 email=item.email,
@@ -187,7 +187,7 @@ def handle_running_flow(item):
                 processstate=1,
                 outcome=-1,
                 data=ev.title,
-                executed=emaildate,
+                executed=email_date,
             )
             se.save()
 
@@ -230,6 +230,7 @@ def handle_calculate_nps_onboarding(item):
     if item.outcome == -1:
         nps_calculator_onboarding()
         print("Onboarding NPS is calculated for " + item.data)
+
 
 def handle_kickoff_questionnaire_completed(item):
     if item.process_state == 1 and item.outcome == -1:
