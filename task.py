@@ -1,6 +1,11 @@
 """
 Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run. This is an extracted sample from production (at one point).
 """
+
+"""
+See Thiago's notes here: https://tinyurl.com/2p82zwx2
+"""
+
 # from simple_history.models import HistoricalRecords
 import datetime
 from datetime import datetime
@@ -38,18 +43,18 @@ class ProgressStatus(models.Model):
     COMPLETED = "completed"
 
     email = models.CharField(max_length=100, default="---")
-    llcformationstatus = models.CharField(max_length=50, default="---")
-    postformationstatus = models.CharField(max_length=50, default="---")
-    einstatus = models.CharField(max_length=50, default="---")
-    businesslicensestatus = models.CharField(max_length=50, default="---")
-    bankaccountstatus = models.CharField(max_length=50, default="---")
-    contributionstatus = models.CharField(max_length=50, default="---")
-    SOIstatus = models.CharField(max_length=50, default="---")
-    FTBstatus = models.CharField(max_length=50, default="---")
-    questionnairestatus = models.CharField(max_length=50, default="---")
-    bookkeepingsetupstatus = models.CharField(max_length=50, default="---")
-    taxsetupstatus = models.CharField(max_length=50, default="---")
-    clientsurveystatus = models.CharField(max_length=50, default="---")
+    llc_formation_status = models.CharField(max_length=50, default="---")
+    post_formation_status = models.CharField(max_length=50, default="---")
+    e_in_status = models.CharField(max_length=50, default="---")
+    business_license_status = models.CharField(max_length=50, default="---")
+    bank_account_status = models.CharField(max_length=50, default="---")
+    contribution_status = models.CharField(max_length=50, default="---")
+    SOI_status = models.CharField(max_length=50, default="---")
+    FTB_status = models.CharField(max_length=50, default="---")
+    questionnaire_status = models.CharField(max_length=50, default="---")
+    bookkeeping_setup_status = models.CharField(max_length=50, default="---")
+    tax_setup_status = models.CharField(max_length=50, default="---")
+    client_survey_status = models.CharField(max_length=50, default="---")
     bk_services_setup_status = models.CharField(
         max_length=50, choices=[(PENDING, PENDING), (COMPLETED, COMPLETED), ], default=PENDING
     )
@@ -71,13 +76,13 @@ class StatusEngine(models.Model):
     SCHEDULED = -1
     COMPLETED = 1
     UNNECESSARY = 4
-    OFFBOARDED = 5
+    OFF_BOARDED = 5
 
     OUTCOMES = [
         (SCHEDULED, "Scheduled"),
         (COMPLETED, "Completed"),
         (UNNECESSARY, "Cancelled due to Completed Task"),
-        (OFFBOARDED, "Cancelled due to Offboarding"),
+        (OFF_BOARDED, "Cancelled due to Offboarding"),
         (FIRST_RETRY, "Retrying previously failed"),
         (SECOND_RETRY, "Retrying previously failed again"),
         (FAILED, "Gave up retrying due to multiple failures"),
@@ -85,8 +90,8 @@ class StatusEngine(models.Model):
 
     email = models.CharField(max_length=50, blank=True)
     process = models.CharField(max_length=100)
-    formationtype = models.CharField(max_length=20, default="---")
-    processstate = models.IntegerField(default=1)
+    formation_type = models.CharField(max_length=20, default="---")
+    process_state = models.IntegerField(default=1)
     outcome = models.IntegerField(choices=OUTCOMES, default=SCHEDULED)
     data = models.CharField(max_length=1000, default="---")
     created = models.DateTimeField(default=timezone.now)
@@ -118,21 +123,21 @@ def scheduled_system():
     db.close_old_connections()
 
     for item in items:
-        if item.process == "Client Onboarding Survey" and item.processstate == 1 and item.outcome == -1:
+        if item.process == "Client Onboarding Survey" and item.process_state == 1 and item.outcome == -1:
             try:
                 send_client_onboarding_survey(email=item.email)
             except Exception as e:
                 logger.exception(f"Can't process Onboarding NPS Survey for status engine id={item.id}")
 
-        elif item.process == "Payment error email" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "Payment error email" and item.process_state == 1 and item.outcome == -1:
             send_transactional_email(
                 email=item.email, template="[Action required] - Please update your payment information",
             )
             print("[Action required] - Please update your payment information email is sent to " + item.email)
-        elif item.process == "Running flow" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "Running flow" and item.process_state == 1 and item.outcome == -1:
             ps = ProgressStatus.objects.get(email=item.email)
-            ps.bookkeepingsetupstatus = "completed"
-            ps.taxsetupstatus = "completed2"
+            ps.bookkeeping_setup_status = "completed"
+            ps.tax_setup_status = "completed2"
             ps.save()
 
             StatusEngine.objects.get_or_create(
@@ -161,7 +166,7 @@ def scheduled_system():
             print("Dropbox folders are created for " + item.email)
 
             has_run_before = StatusEngine.objects.filter(
-                email=item.email, process=item.process, processstate=item.processstate, outcome=1,
+                email=item.email, process=item.process, processstate=item.process_state, outcome=1,
             ).exists()
 
             if has_run_before:
@@ -170,7 +175,7 @@ def scheduled_system():
                         item.email
                     )
                 )
-        elif item.process == "Running flow" and item.processstate == 2 and item.outcome == -1:
+        elif item.process == "Running flow" and item.process_state == 2 and item.outcome == -1:
             EVs = EmailView.objects.filter(type="annual", legacy=True)
             for ev in EVs:
                 templatedate = ev.date.split("-")
@@ -190,14 +195,14 @@ def scheduled_system():
                 se.save()
         elif item.process == "Annual Report Uploaded" and item.outcome == -1:
 
-            reportdetails = item.data.split("---")
-            reportname = reportdetails[1].strip()
-            reportyear = reportdetails[0].strip()
-            reportstate = reportdetails[2].strip() if len(reportdetails) == 3 else None
+            report_details = item.data.split("---")
+            report_name = report_details[1].strip()
+            report_year = report_details[0].strip()
+            report_state = report_details[2].strip() if len(report_details) == 3 else None
 
-            data_filter = Q(data=f"{reportyear} --- {reportname}")
-            if reportstate:
-                data_filter |= Q(data=f"{reportyear} --- {reportname} --- {reportstate}")
+            data_filter = Q(data=f"{report_year} --- {report_name}")
+            if report_state:
+                data_filter |= Q(data=f"{report_year} --- {report_name} --- {report_state}")
 
             SEs = StatusEngine.objects.filter(email=item.email, process="Annual Report Reminder", outcome=-1).filter(
                 data_filter
@@ -212,7 +217,7 @@ def scheduled_system():
             item.executed = timezone.now()
             item.save()
 
-            next_annualreport_reminder(item.email, reportname, reportstate)
+            next_annualreport_reminder(item.email, report_name, report_state)
         elif item.process == "Calculate NPS Running" and item.outcome == -1:
             nps_calculator_running()
 
@@ -222,10 +227,10 @@ def scheduled_system():
 
             print("Onboarding NPS is calculated for " + item.data)
 
-        elif item.process == "Kickoff Questionnaire Completed" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "Kickoff Questionnaire Completed" and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.filter(email__iexact=item.email).first()
             if progress_status:
-                progress_status.questionnairestatus = "scheduled"
+                progress_status.questionnaire_status = "scheduled"
                 progress_status.save()
 
                 StatusEngine.objects.create(
@@ -237,9 +242,9 @@ def scheduled_system():
                     data=item.data,
                 )
 
-        elif item.process == "Kickoff Call Scheduled" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "Kickoff Call Scheduled" and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
-            progress_status.questionnairestatus = "scheduled"
+            progress_status.questionnaire_status = "scheduled"
             progress_status.save()
 
             StatusEngine.objects.create(
@@ -251,9 +256,9 @@ def scheduled_system():
                 data=item.data,
             )
 
-        elif item.process == "Kickoff Call Cancelled" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "Kickoff Call Cancelled" and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
-            progress_status.questionnairestatus = "reschedule"
+            progress_status.questionnaire_status = "reschedule"
             progress_status.save()
 
             StatusEngine.objects.create(
@@ -266,11 +271,11 @@ def scheduled_system():
 
         elif (
                 item.process == "Transition Plan Submitted"
-                and item.processstate == 1
+                and item.process_state == 1
                 and item.outcome == StatusEngine.SCHEDULED
         ):
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
-            progress_status.questionnairestatus = "submitted"
+            progress_status.questionnaire_status = "submitted"
             progress_status.save()
 
             StatusEngine.objects.create(
@@ -292,7 +297,7 @@ def scheduled_system():
                 defaults={"executed": timezone.now() + relativedelta(days=1)},
             )
 
-        elif item.process == "BK Training Call Scheduled" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "BK Training Call Scheduled" and item.process_state == 1 and item.outcome == -1:
             StatusEngine.objects.create(
                 email=item.email,
                 processstate=1,
@@ -302,9 +307,9 @@ def scheduled_system():
                 data=item.data,
             )
 
-        elif item.process == "BK Training Call Cancelled" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "BK Training Call Cancelled" and item.process_state == 1 and item.outcome == -1:
             progress_status = ProgressStatus.objects.get(email__iexact=item.email)
-            progress_status.bookkeepingsetupstatus = "reschedule"
+            progress_status.bookkeeping_setup_status = "reschedule"
             progress_status.save()
 
             status_engine = StatusEngine(
@@ -325,7 +330,7 @@ def scheduled_system():
                 outcome=-1,
                 process="BK Training Call Cancelled",
             )
-        elif item.process == "Bank connect" and item.processstate == 1 and item.outcome == -1:
+        elif item.process == "Bank connect" and item.process_state == 1 and item.outcome == -1:
             send_transactional_email(
                 email=item.email,
                 template="SP.ONB.0021 - Account is created before, bank is connected later",
@@ -335,7 +340,7 @@ def scheduled_system():
             item.outcome = 1
             item.executed = timezone.now()
             item.save()
-        elif item.process == "Bank connect" and item.processstate == 2 and item.outcome == -1:
+        elif item.process == "Bank connect" and item.process_state == 2 and item.outcome == -1:
             send_transactional_email(
                 email=item.email,
                 template="SP.ONB.0010 - Account is created",
@@ -345,13 +350,13 @@ def scheduled_system():
             item.outcome = 1
             item.executed = timezone.now()
             item.save()
-        elif item.process == "Bank connect" and item.processstate == 3 and item.outcome == -1:
+        elif item.process == "Bank connect" and item.process_state == 3 and item.outcome == -1:
             if item.executed is None:
-                reftime = item.created
+                ref_time = item.created
             else:
-                reftime = item.executed
+                ref_time = item.executed
 
-            passed_seconds = (datetime.datetime.now(timezone.utc) - reftime).total_seconds()
+            passed_seconds = (datetime.datetime.now(timezone.utc) - ref_time).total_seconds()
 
             if passed_seconds < 259200:
                 continue

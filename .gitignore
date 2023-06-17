@@ -160,8 +160,6 @@ cython_debug/
 .idea/
 /dateutil/
 
-./creator.py
-
 creator.py
 
 datetime/
