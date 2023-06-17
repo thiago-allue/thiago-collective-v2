@@ -2,8 +2,17 @@
 Note that this example WILL NOT RUN in CoderPad, since it does not provide a Django environment in which to run.
 This is an extracted sample from production (at one point).
 
+Notes:
+-----
 See Thiago's notes here: https://tinyurl.com/2p82zwx2
 
+Summary:
+-------
+This script implements a scheduled system for handling various tasks for the Hyke System.
+The StatusEngine model stores the state of each task and the ProgressStatus model stores the progress of each task.
+Each handler function implements the business logic for handling a task based on its current state.
+Each task type is mapped to its corresponding handler in `process_mapping` dictionary.
+The `scheduled_system` function fetches all active tasks and processes them using their corresponding handler.
 """
 import datetime
 from datetime import datetime
@@ -29,6 +38,9 @@ from hyke.scheduled.service.nps_surveys import schedule_next_running_survey_sequ
 # Excerpted below, from hyke.api.models import ProgressStatus, StatusEngine
 ##
 class ProgressStatus(models.Model):
+    """
+    Model for storing the progress of each task.
+    """
     PENDING = "pending"
     COMPLETED = "completed"
 
@@ -58,6 +70,9 @@ class ProgressStatus(models.Model):
 
 
 class StatusEngine(models.Model):
+    """
+    Model for storing the state of each task.
+    """
     FAILED = -4
     SECOND_RETRY = -3
     FIRST_RETRY = -2
@@ -100,6 +115,9 @@ logger = get_logger(__name__)
 
 
 def handle_client_onboarding_survey(item):
+    """
+    Handler for sending a client onboarding survey.
+    """
     if item.process_state == 1 and item.outcome == -1:
         try:
             send_client_onboarding_survey(email=item.email)
@@ -109,6 +127,9 @@ def handle_client_onboarding_survey(item):
 
 
 def handle_payment_error_email(item):
+    """
+    Handler for sending a payment error email.
+    """
     if item.process_state == 1 and item.outcome == -1:
         send_transactional_email(email=item.email,
                                  template="[Action required] - Please update your payment information")
@@ -116,6 +137,9 @@ def handle_payment_error_email(item):
 
 
 def handle_running_flow(item):
+    """
+    Handler for managing the running flow.
+    """
     if item.process_state == 1 and item.outcome == -1:
         ps = ProgressStatus.objects.get(email=item.email)
         ps.bookkeeping_setup_status = "completed"
@@ -178,6 +202,9 @@ def handle_running_flow(item):
 
 
 def handle_annual_report_uploaded(item):
+    """
+    Handler for handling annual report uploads.
+    """
     if item.outcome == -1:
 
         report_details = item.data.split("---")
@@ -207,18 +234,27 @@ def handle_annual_report_uploaded(item):
 
 
 def handle_calculate_nps_running(item):
+    """
+    Handler for calculating running NPS.
+    """
     if item.outcome == -1:
         nps_calculator_running()
         print("Running NPS is calculated for " + item.data)
 
 
 def handle_calculate_nps_onboarding(item):
+    """
+    Handler for calculating onboarding NPS.
+    """
     if item.outcome == -1:
         nps_calculator_onboarding()
         print("Onboarding NPS is calculated for " + item.data)
 
 
 def handle_kickoff_questionnaire_completed(item):
+    """
+    Handler for managing the completion of the kickoff questionnaire.
+    """
     if item.process_state == 1 and item.outcome == -1:
         progress_status = ProgressStatus.objects.filter(email__iexact=item.email).first()
         if progress_status:
@@ -236,6 +272,9 @@ def handle_kickoff_questionnaire_completed(item):
 
 
 def handle_kickoff_call_scheduled(item):
+    """
+    Handler for scheduling a kickoff call.
+    """
     if item.process_state == 1 and item.outcome == -1:
         progress_status = ProgressStatus.objects.get(email__iexact=item.email)
         progress_status.questionnaire_status = "scheduled"
@@ -252,6 +291,9 @@ def handle_kickoff_call_scheduled(item):
 
 
 def handle_kickoff_call_cancelled(item):
+    """
+    Handler for managing the cancellation of a kickoff call.
+    """
     if item.process_state == 1 and item.outcome == -1:
         progress_status = ProgressStatus.objects.get(email__iexact=item.email)
         progress_status.questionnaire_status = "reschedule"
@@ -267,6 +309,9 @@ def handle_kickoff_call_cancelled(item):
 
 
 def handle_transition_plan_submitted(item):
+    """
+    Handler for managing the submission of a transition plan.
+    """
     if item.process_state == 1 and item.outcome == StatusEngine.SCHEDULED:
         progress_status = ProgressStatus.objects.get(email__iexact=item.email)
         progress_status.questionnaire_status = "submitted"
@@ -293,6 +338,9 @@ def handle_transition_plan_submitted(item):
 
 
 def handle_bk_training_call_scheduled(item):
+    """
+    Handler for scheduling a BK training call.
+    """
     if item.process_state == 1 and item.outcome == -1:
         StatusEngine.objects.create(
             email=item.email,
@@ -305,6 +353,9 @@ def handle_bk_training_call_scheduled(item):
 
 
 def handle_bk_training_call_cancelled(item):
+    """
+    Handler for managing the cancellation of a BK training call.
+    """
     if item.process_state == 1 and item.outcome == -1:
         progress_status = ProgressStatus.objects.get(email__iexact=item.email)
         progress_status.bookkeeping_setup_status = "reschedule"
@@ -336,6 +387,9 @@ def handle_bk_training_call_cancelled(item):
 
 
 def handle_bank_connect(item):
+    """
+    Handler for connecting a bank.
+    """
     if item.process_state == 1 and item.outcome == -1:
         send_transactional_email(
             email=item.email,
@@ -401,16 +455,23 @@ process_mapping = {
 
 
 def scheduled_system():
+    """
+    This function checks for all tasks that are marked as "Hyke Daily" and
+    are not yet completed (-1 outcome), and processes them using the function
+    defined in the process_mapping dictionary.
+    """
     print("Scheduled task has been started for Hyke System...")
 
     items = StatusEngine.objects.filter(Q(outcome=-1) & Q(formationtype__startswith="Hyke Daily"))
 
     print("Active items in the job: " + str(len(items)))
 
+    # Close old connections to the database to prevent hanging connections
     db.close_old_connections()
 
     for item in items:
         if item.process in process_mapping:
+            # Call the processing function for the item's process
             process_mapping[item.process](item)
 
     print("Scheduled task is completed for Hyke System...\n")
