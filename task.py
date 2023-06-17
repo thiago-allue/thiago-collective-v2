@@ -121,8 +121,9 @@ def handle_client_onboarding_survey(item):
     if item.process_state == 1 and item.outcome == -1:
         try:
             send_client_onboarding_survey(email=item.email)
-        except Exception:  # Specify exception clause. See [3] in "Notes Collective.gdoc"
-            logger.exception(f"Can't process Onboarding NPS Survey for status engine id={item.id}")
+        except Exception as e:  # Always specify or handle exception clauses. See [3] in "Notes Collective.gdoc"
+            logger.exception(f"Exception: Can't process Onboarding NPS Survey for status engine id={item.id}. "
+                             f"Error: {str(e)}")
 
 
 def handle_payment_error_email(item):
