@@ -1,0 +1,2 @@
+Django~=3.2.19
+structlog~=23.1.0

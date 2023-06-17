@@ -49,8 +49,6 @@ class ProgressStatus(models.Model):
         max_length=50, choices=[(PENDING, PENDING), (COMPLETED, COMPLETED), ], default=PENDING
     )
 
-    # history = HistoricalRecords()
-
     class Meta:
         verbose_name = "ProgressStatus"
         verbose_name_plural = "ProgressStatuses"
@@ -101,7 +99,6 @@ class StatusEngine(models.Model):
 logger = get_logger(__name__)
 
 
-# Separate the tasks into functions
 def handle_client_onboarding_survey(item):
     if item.process_state == 1 and item.outcome == -1:
         try:
