@@ -159,15 +159,19 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 /dateutil/
-!/creator.py
-!/datetime/
 
-!/dateutil/
+./creator.py
 
-!/django/
+creator.py
 
-!/hyke/
+datetime/
 
-!/simple_history/
+dateutil/
 
-!/structlog/
+django/
+
+hyke/
+
+simple_history/
+
+structlog/
